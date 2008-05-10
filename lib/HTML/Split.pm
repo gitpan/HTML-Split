@@ -3,7 +3,7 @@ package HTML::Split;
 use strict;
 use warnings;
 use 5.8.1;
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 use base qw( Class::Accessor::Fast );
 __PACKAGE__->mk_ro_accessors(qw( total_pages prev_page next_page ));
@@ -21,8 +21,10 @@ sub split {
     my $max_length  = $param{length} or return ($html);
     my $extend_tags = $param{extend_tags} || [];
 
-    Encode::_utf8_on($html) unless Encode::is_utf8($html);
-    return ( $html ) if length $html <= $max_length;
+    my $is_utf8 = Encode::is_utf8($html);
+
+    Encode::_utf8_on($html) unless $is_utf8;
+    return ( $param{html} ) if length $html <= $max_length;
 
     my (@pages, @tags, $last_tag, $forwarded_tags);
     my $page = '';
@@ -115,7 +117,9 @@ sub split {
     $p->eof;
     $create_page->();
 
-    Encode::_utf8_off($_) for @pages;
+    unless ($is_utf8) {
+        Encode::_utf8_off($_) for @pages;
+    }
     return @pages;
 }
 
@@ -239,11 +243,11 @@ The ending pattern of your original markup.
 
 =back
 
-=head1 INSTANCE METHODS
-
 =head2 new
 
 Create an instance of HTML::Split. Accept same arguments as I<split> method.
+
+=head1 INSTANCE METHODS
 
 =head2 current_page
 
