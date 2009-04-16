@@ -1,5 +1,6 @@
 Changes
 inc/Module/Install.pm
+inc/Module/Install/AuthorTests.pm
 inc/Module/Install/Base.pm
 inc/Module/Install/Can.pm
 inc/Module/Install/Fetch.pm
@@ -24,3 +25,6 @@ t/00-compile.t
 t/01-split.t
 t/01-split_bugs.t
 t/02-pager.t
+xt/perlcritic.t
+xt/pod.t
+xt/podspell.t

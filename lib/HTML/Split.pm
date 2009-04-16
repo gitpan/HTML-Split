@@ -3,7 +3,7 @@ package HTML::Split;
 use strict;
 use warnings;
 use 5.8.1;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use base qw( Class::Accessor::Fast );
 __PACKAGE__->mk_ro_accessors(qw( total_pages prev_page next_page ));
@@ -47,6 +47,9 @@ sub split {
     my $start_tag_handler = sub {
         my ($p, $tagname, $text) = @_;
         if ($find_end_tag) {
+            unless ($_is_empty_tag{$tagname}) {
+                push @tags, $last_tag = { tagname => $tagname, text => $text };
+            }
             $page .= $text;
             return;
         }
@@ -127,14 +130,14 @@ sub new {
     my $class = shift;
     my %param = @_;
 
-    my $html        = $param{html}   or die;
-    my $length      = $param{length} or die;
-    my $extend_tags = $param{extend_tags} || [];
+    return warn q{'html' was not set}       unless $param{html};
+    return warn q{'length' was not set}     unless $param{length};
+    return warn q{'length' is not numeric.} unless $param{length} =~ /^\d+$/;
 
     my @pages = __PACKAGE__->split(
-        html        => $html,
-        length      => $length,
-        extend_tags => $extend_tags,
+        html        => $param{html},
+        length      => $param{length},
+        extend_tags => $param{extend_tags} || [],
     );
 
     my $self = bless {
@@ -169,7 +172,7 @@ __END__
 
 =head1 NAME
 
-HTML::Split - Splitting HTML by number of characters.
+HTML::Split - Splitting HTML by number of characters with keeping DOM structure.
 
 =head1 SYNOPSIS
 
@@ -192,7 +195,8 @@ HTML::Split - Splitting HTML by number of characters.
 
 =head1 DESCRIPTION
 
-HTML::Split is the module to split HTML by number of characters.
+HTML::Split is the module to split HTML by number of characters with keeping
+DOM structure.
 
 In some mobile devices, mainly cell-phones, because the data size
 that can be acquired with HTTP is limited, it is necessary to split HTML.
@@ -264,6 +268,10 @@ Return the next page number. If the next page doesn't exists, return undef.
 =head2 prev_page
 
 Return the previous page number.  If the previous page doesn't exists, return undef.
+
+=head2 text
+
+Return the text of current page.
 
 =head1 AUTHOR
 
